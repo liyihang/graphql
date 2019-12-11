@@ -2,25 +2,34 @@ const graphql = require('graphql');
 
 const _ = require('lodash')
 
-const { GraphQLObjectType, GraphQLString, GraphQLSchema, GraphQLID, GraphQLInt } = graphql;
+const { GraphQLObjectType, GraphQLString, GraphQLSchema, GraphQLID, GraphQLInt, GraphQLList } = graphql;
 
 // dummy data
 var books = [
-    { name: 'the hero of the ages', genre: 'brandon', id: '1' },
-    { name: 'the final empire', genre: 'brandon', id: '2' },
-    { name: 'the hero of the ages', genre: 'brandon', id: '3' },
-]
+    { name: 'Name of the Wind', genre: 'Fantasy', id: '1', authorId: '1' },
+    { name: 'The Final Empire', genre: 'Fantasy', id: '2', authorId: '2' },
+    { name: 'The Long Earth', genre: 'Sci-Fi', id: '3', authorId: '3' },
+];
+
 var authors = [
-    { name: 'brandon', age: 30, id: '1' },
-    { name: 'brandonTwo', age: 32, id: '2' },
-    { name: 'brandonThree', age: 33, id: '3' },
-]
+    { name: 'Patrick Rothfuss', age: 44, id: '1' },
+    { name: 'Brandon Sanderson', age: 42, id: '2' },
+    { name: 'Terry Pratchett', age: 66, id: '3' }
+];
+
 const BookType = new GraphQLObjectType({
     name: 'Book',
-    fields: () => ({
+    fields: ( ) => ({
         id: { type: GraphQLID },
         name: { type: GraphQLString },
-        genre: { type: GraphQLString }
+        genre: { type: GraphQLString },
+        author: {
+            type: AuthorType,
+            resolve(parent, args){
+                console.log(parent);
+                return _.find(authors, { id: parent.authorId });
+            }
+        }
     })
 });
 
@@ -29,7 +38,13 @@ const AuthorType = new GraphQLObjectType({
     fields: () => ({
         id: { type: GraphQLID },
         name: { type: GraphQLString },
-        age: { type: GraphQLInt }
+        age: { type: GraphQLInt },
+        books:{
+            type:new GraphQLList(BookType),
+            resolve(parent,args){
+                return _.filter(books,{authorId:parent.id})
+            }
+        }
     })
 })
 
